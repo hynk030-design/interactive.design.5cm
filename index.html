@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>초속 5cm</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;500&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      touch-action: manipulation;
+    }
+    #vanta-bg {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+    }
+    canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="vanta-bg"></div>
+
+  <!-- three / vanta -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+
+  <!-- MediaPipe Pose (p5/sketch보다 먼저) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+
+  <!-- p5 core -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
+
+<!-- p5 sound (이게 없어서 터진 거임) -->
+<script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/addons/p5.sound.min.js"></script>
+
+<!-- 너의 코드 -->
+<script src="sketch.js"></script>
+
+
+
+  <!-- intro + transition -->
+  <script>
+    let vantaEffect = null
+    window.started = false
+
+    function initVanta() {
+      vantaEffect = VANTA.NET({
+        el: "#vanta-bg",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        points: 12.0,
+        maxDistance: 11.0,
+        spacing: 26.0,
+        showDots: true,
+        color: 0xffffff,
+        backgroundColor: 0x000000,
+        backgroundAlpha: 0.08
+      })
+
+      const el = document.getElementById("vanta-bg")
+      el.style.pointerEvents = "auto"
+    }
+
+    function startMain() {
+      if (window.started) return
+      window.started = true
+
+      const bg = document.getElementById("vanta-bg")
+      bg.style.transition = "opacity 0.9s ease"
+      bg.style.opacity = "0"
+
+      if (typeof window.onStartMain === "function") {
+        window.onStartMain()
+      }
+
+      setTimeout(() => {
+        if (vantaEffect) {
+          vantaEffect.destroy()
+          vantaEffect = null
+        }
+        bg.style.display = "none"
+      }, 900)
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      initVanta()
+      document.addEventListener("pointerdown", startMain, { once: true })
+    })
+  </script>
+
+</body>
+</html>
+
