@@ -1633,18 +1633,25 @@ function computeLayout() {
 function drawLineOverlay() {
   if (!currentLine) return
 
+  const isMobile = window.innerWidth < 768
   const w = min(width * 0.5, 560)
-  const x = UI_MARGIN
-  const y = UI_MARGIN + SAFE_TOP
 
+  const x = UI_MARGIN
+  const y = isMobile
+    ? height - 90   // 👈 아래로
+    : UI_MARGIN    // 데스크탑은 그대로
 
   push()
   textAlign(LEFT, TOP)
   const t = styleText(FONT_BODY, TYPE.line.size, TYPE.line.leadPx, TYPE.line.tracking, TYPE.line.weight)
-  fill(currentLineType === "snow" ? color(220, 230, 255, 175) : color(255, 205, 230, 175))
+  fill(currentLineType === "snow"
+    ? color(220, 230, 255, 175)
+    : color(255, 205, 230, 175)
+  )
   drawDeckLineWrapped(currentLine, x, y, w, TYPE.line.leadPx, t)
   pop()
 }
+
 
 function drawSeasonLabel() {
   push()
