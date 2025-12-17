@@ -11,12 +11,12 @@
 
   <style>
     :root { --vh: 1vh; }
-    html, body { height: calc(var(--vh) * 100); }
 
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
+      height: calc(var(--vh) * 100);
       overflow: hidden;
       background: #000;
       touch-action: manipulation;
@@ -36,19 +36,16 @@
       z-index: 1;
     }
 
-    /* ===== 모바일 설명 ===== */
-    #mobile-desc {
+    /* =========================
+       모바일 가로 스크롤 인트로
+    ========================= */
+    #intro {
       display: none;
-      padding: 20px;
-      color: #eee;
-      font-family: 'Noto Serif KR', serif;
-      line-height: 1.6;
-      background: #000;
     }
 
     @media (max-width: 768px) {
       html, body {
-        overflow-y: auto;
+        overflow: hidden;
       }
 
       canvas {
@@ -56,8 +53,59 @@
         height: 70vh;
       }
 
-      #mobile-desc {
+      #intro {
         display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        background: rgba(0,0,0,0.85);
+        backdrop-filter: blur(2px);
+      }
+
+      #intro .rail {
+        height: 100%;
+        display: flex;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #intro .panel {
+        flex: 0 0 100%;
+        scroll-snap-align: start;
+        padding: 28px 22px;
+        box-sizing: border-box;
+        color: #eee;
+        font-family: 'Noto Serif KR', serif;
+        line-height: 1.7;
+      }
+
+      #intro h2 {
+        font-size: 22px;
+        margin-bottom: 14px;
+      }
+
+      #intro p {
+        opacity: 0.9;
+        margin-bottom: 14px;
+      }
+
+      #intro .hint {
+        font-size: 12px;
+        opacity: 0.6;
+        margin-top: 20px;
+        font-family: 'Noto Sans KR', sans-serif;
+      }
+
+      #startBtn {
+        margin-top: 24px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.35);
+        background: rgba(0,0,0,0.4);
+        color: #fff;
+        font-size: 14px;
+        font-family: 'Noto Sans KR', sans-serif;
       }
     }
   </style>
@@ -67,17 +115,37 @@
 
   <div id="vanta-bg"></div>
 
-  <!-- 모바일용 설명 영역 -->
-  <div id="mobile-desc">
-    <h2>초속 5cm</h2>
-    <p>
-      손의 움직임과 텍스트의 낙하 속도를 통해<br>
-      사람 사이에 남는 미세한 간격을 표현한 인터랙티브 작업입니다.
-    </p>
-    <p>
-      겨울에는 텍스트가 눈처럼 녹아 사라지고,<br>
-      봄에는 자모로 분해되어 흩어집니다.
-    </p>
+  <!-- 모바일 가로 스크롤 인트로 -->
+  <div id="intro">
+    <div class="rail">
+      <section class="panel">
+        <h2>초속 5cm</h2>
+        <p>
+          손의 움직임과 텍스트의 낙하 속도를 통해<br>
+          사람 사이에 남는 미세한 간격을 표현한 인터랙티브 작업입니다.
+        </p>
+        <div class="hint">→ 옆으로 넘겨보세요</div>
+      </section>
+
+      <section class="panel">
+        <p>
+          겨울에는 텍스트가 눈처럼 천천히 녹아 사라지고,<br>
+          봄에는 자모로 분해되어 흩어집니다.
+        </p>
+        <p>
+          닿을 듯 닿지 않는 타이밍과<br>
+          멀어지는 감정의 속도를 시각화합니다.
+        </p>
+      </section>
+
+      <section class="panel">
+        <p>
+          화면 앞에 서서 손을 움직여 보세요.<br>
+          계절과 텍스트의 반응이 달라집니다.
+        </p>
+        <button id="startBtn">작품 감상 시작</button>
+      </section>
+    </div>
   </div>
 
   <!-- three / vanta -->
@@ -94,7 +162,6 @@
   <!-- sketch -->
   <script src="sketch.js"></script>
 
-  <!-- intro + vh fix -->
   <script>
     let vantaEffect = null
     window.started = false
@@ -105,9 +172,9 @@
         mouseControls: true,
         touchControls: true,
         gyroControls: false,
-        points: 12.0,
-        maxDistance: 11.0,
-        spacing: 26.0,
+        points: 12,
+        maxDistance: 11,
+        spacing: 26,
         showDots: true,
         color: 0xffffff,
         backgroundColor: 0x000000,
@@ -120,7 +187,6 @@
       window.started = true
 
       const bg = document.getElementById("vanta-bg")
-      bg.style.transition = "opacity 0.9s ease"
       bg.style.opacity = "0"
 
       if (typeof window.onStartMain === "function") {
@@ -128,25 +194,34 @@
       }
 
       setTimeout(() => {
-        if (vantaEffect) {
-          vantaEffect.destroy()
-          vantaEffect = null
-        }
+        if (vantaEffect) vantaEffect.destroy()
         bg.style.display = "none"
       }, 900)
     }
 
     function setVH() {
-      document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px")
+      document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`)
     }
 
-    window.addEventListener("resize", setVH)
-    window.addEventListener("orientationchange", setVH)
     window.addEventListener("DOMContentLoaded", () => {
       setVH()
       initVanta()
-      document.addEventListener("pointerdown", startMain, { once: true })
+
+      const isMobile = matchMedia("(max-width: 768px)").matches
+
+      if (isMobile) {
+        const btn = document.getElementById("startBtn")
+        btn.addEventListener("click", () => {
+          document.getElementById("intro").style.display = "none"
+          startMain()
+        }, { once: true })
+      } else {
+        document.addEventListener("pointerdown", startMain, { once: true })
+      }
     })
+
+    window.addEventListener("resize", setVH)
+    window.addEventListener("orientationchange", setVH)
   </script>
 
 </body>
