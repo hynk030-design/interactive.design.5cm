@@ -60,7 +60,8 @@ let currentSpawnSentence = ""
 let currentLine = ""
 let currentLineType = "snow"
 
-let showIntro = true
+let showIntro = !(window.matchMedia && window.matchMedia("(max-width: 768px)").matches)
+
 let introRipples = []
 
 let lastSeasonGestureTime = 0
