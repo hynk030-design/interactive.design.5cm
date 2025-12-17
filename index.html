@@ -306,6 +306,11 @@
         document.addEventListener("pointerdown", startMain, { once: true })
       }
     })
+    if (isMobile) {
+  window.showIntro = false
+  window.introRipples = []
+}
+
   </script>
 </body>
 </html>
