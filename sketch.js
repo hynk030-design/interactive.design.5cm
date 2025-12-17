@@ -13,7 +13,13 @@ let freezeMix = 0
 let freezeTarget = 0
 let lastFrameMs = 0
 let bgmWinter
-let grainG
+let lastPersonSeenMs = 0
+const PERSON_LOST_DELAY_MS = 650
+let UI_S = 1
+let SAFE_TOP = 0
+let SAFE_BOT = 0
+
+
 
 
 const FREEZE_FADE_MS = 5000
@@ -318,7 +324,27 @@ function setup() {
 
   reflectionLayer = createGraphics(windowWidth, windowHeight)
   reflectionLayer.clear()
+  updateResponsive()
+
 }
+function updateResponsive() {
+  const baseW = 1200
+  const baseH = 800
+  UI_S = constrain(min(width / baseW, height / baseH), 0.72, 1.25)
+
+  const isMobile = min(width, height) < 720
+  SAFE_TOP = isMobile ? 18 : 0
+  SAFE_BOT = isMobile ? 18 : 0
+
+  DOT_PX_BASE = 18 * UI_S
+  DOT_R_BASE  = 10.2 * UI_S
+
+  silW = floor(80 * UI_S)
+  silH = floor(60 * UI_S)
+  silG = createGraphics(silW, silH)
+  silG.pixelDensity(1)
+}
+
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight)
@@ -329,9 +355,8 @@ function windowResized() {
   reflectionLayer = createGraphics(windowWidth, windowHeight)
   reflectionLayer.clear()
   if (old) reflectionLayer.image(old, 0, 0, width, height)
-    grainG = createGraphics(windowWidth, windowHeight)
-grainG.pixelDensity(1)
-grainG.clear()
+  updateResponsive()
+
 
 }
 
@@ -349,13 +374,18 @@ function draw() {
   }
 
   const personPresent = hasPersonMP()
-  freezeTarget = personPresent ? 0 : 1
+if (personPresent) lastPersonSeenMs = now
 
-  const dur = freezeTarget ? FREEZE_FADE_MS : RESUME_FADE_MS
-  const a = constrain(dt / max(1, dur), 0, 1)
-  freezeMix = lerp(freezeMix, freezeTarget, a)
+const lostLongEnough = (now - lastPersonSeenMs) > PERSON_LOST_DELAY_MS
+freezeTarget = lostLongEnough ? 1 : 0
 
-  const timeScale = 1 - freezeMix
+const dur = freezeTarget ? FREEZE_FADE_MS : RESUME_FADE_MS
+const a = constrain(dt / max(1, dur), 0, 1)
+freezeMix = lerp(freezeMix, freezeTarget, a)
+
+// 완전 0은 피해서 "멈춘 듯"만 만들기
+const timeScale = lerp(1, 0.08, freezeMix)
+
 
  // ===== BG DRAW + TONE CONTROL =====
 if (bgImg) {
@@ -383,19 +413,6 @@ fill(120, 120, 120, grayA)
 rect(0, 0, width, height)
 pop()
 
-// 3) 그레인(더 쎄게)
-push()
-noStroke()
-const grainA = lerp(22, 34, winterness)       // 겨울 조금 더 거칠게
-for (let i = 0; i < 9000; i++) {
-  const x = random(width)
-  const y = random(height)
-  const a = random(grainA * 0.4, grainA)
-  fill(255, 255, 255, a)
-  rect(x, y, 1, 1)
-}
-pop()
-
 
 
 
@@ -411,30 +428,7 @@ pop()
     motionFactor = lerp(motionFactor, computeHandMotionFactor(hands), 0.18)
 
     handColliders = buildHandColliders(hands)
-    function drawGrainOverlay() {
-  push()
-  noStroke()
 
-  // 🔥 핵심 파라미터
-  const density = 1 / 4200   // 작을수록 많아짐 (기존보다 훨씬 빽빽)
-  const passes = 2           // 몇 번 겹칠지
-  const alphaBase = 42       // 기본 투명도
-
-  const count = width * height * density
-
-  for (let p = 0; p < passes; p++) {
-    for (let i = 0; i < count; i++) {
-      const x = random(width)
-      const y = random(height)
-      const g = random(120, 255)
-
-      fill(g, g, g, alphaBase)
-      rect(x, y, 1, 1)
-    }
-  }
-
-  pop()
-}
 
 
 
@@ -779,7 +773,8 @@ function computeHandMotionFactor(hands) {
 
 function buildHandColliders(hands) {
   const col = []
-  for (let h of hands) col.push({ x: h.x, y: h.y, r: 56 })
+for (let h of hands) col.push({ x: h.x, y: h.y, r: 56 * UI_S })
+
   return col
 }
 
@@ -913,7 +908,7 @@ class JamoParticle {
     this.size = baseSize * 0.9 * this.layerScale
 
     const ang = random(TWO_PI)
-    const sp = random(2.6, 6.2) * (0.85 + 0.3 * map(this.depth, 0.3, 1.0, 0, 1))
+    const sp = random(4.2, 9.4)
     const rvx = cos(ang) * sp
     const rvy = sin(ang) * sp * 0.8 - random(0.8, 2.2)
 
@@ -966,6 +961,7 @@ isDead() {
     textStyle(NORMAL)
     textSize(this.size)
     noStroke()
+    const effectiveAlpha = (this.alpha / 255) * this.baseAlpha
 
     fill(110, 55, 85, effectiveAlpha * 0.18)
     text(this.text, 1.1 + this.depth, 0.9 + this.depth)
@@ -992,7 +988,8 @@ class TextParticle {
     this.x = random(width)
     this.y = -20
 
-    this.baseSize = random(12, 19)
+   this.baseSize = random(12, 19) * UI_S
+
     this.size = this.baseSize * this.layerScale
 
     this.t = random(1000)
@@ -1007,14 +1004,14 @@ class TextParticle {
      this.spin = random(-0.004, 0.004)
 
     } else {
-      this.vy = random(0.9, 1.6) * depthSpeedFactor
- * depthSpeedFactor
+     this.vy = random(0.9, 1.6) * depthSpeedFactor
+
       this.vx = random(-0.62, 0.62)
       this.spin = random(-0.07, 0.07)
     }
 
     this.alpha = 255
-    this.caught = false
+    
     this.melting = false
     this.meltProgress = 0
 
@@ -1103,82 +1100,71 @@ class TextParticle {
 }
 
 
-  updateBlossom(hands, sf) {
-    this.t += 0.028
+ updateBlossom(hands, sf) {
+  this.t += 0.028
 
-    const n = noise(this.seed * 0.0007, this.t * 0.38, this.y * 0.0016)
-    const dir = (n - 0.5) * 2.25 + this.gustBias * 0.25
+  const n = noise(this.seed * 0.0007, this.t * 0.38, this.y * 0.0016)
+  const dir = (n - 0.5) * 2.25 + this.gustBias * 0.25
 
-    const baseWind = 0.92 + 0.76 * map(this.depth, 0.3, 1.0, 0.2, 1.0)
-    const wxTarget = dir * baseWind
-    const wyTarget = (noise(this.seed * 0.0009 + 7.1, this.t * 0.28, this.x * 0.0015) - 0.5) * baseWind * 0.28
+  const baseWind = 0.92 + 0.76 * map(this.depth, 0.3, 1.0, 0.2, 1.0)
+  const wxTarget = dir * baseWind
+  const wyTarget = (noise(this.seed * 0.0009 + 7.1, this.t * 0.28, this.x * 0.0015) - 0.5) * baseWind * 0.28
 
-    this.windX = lerp(this.windX, wxTarget, 0.065)
-    this.windY = lerp(this.windY, wyTarget, 0.06)
+  this.windX = lerp(this.windX, wxTarget, 0.065)
+  this.windY = lerp(this.windY, wyTarget, 0.06)
 
-    const g = (0.06 + 0.03 * map(this.depth, 0.3, 1.0, 0.0, 1.0)) * sf
-    this.flutter += this.flutterSpd * (0.95 + 0.22 * map(this.depth, 0.3, 1.0, 0.0, 1.0))
+  const g = (0.06 + 0.03 * map(this.depth, 0.3, 1.0, 0.0, 1.0)) * sf
+  this.flutter += this.flutterSpd * (0.95 + 0.22 * map(this.depth, 0.3, 1.0, 0.0, 1.0))
 
-    const lift = (sin(this.flutter + this.p1) * 0.18 + sin(this.flutter * 0.56 + this.p2) * 0.1) * 0.52
-    const slip = sin(this.flutter * 0.92 + this.p2) * 0.26
+  const lift = (sin(this.flutter + this.p1) * 0.18 + sin(this.flutter * 0.56 + this.p2) * 0.1) * 0.52
+  const slip = sin(this.flutter * 0.92 + this.p2) * 0.26
 
-    this.vx += (this.windX + slip) * 0.09 * (0.9 + 0.1 * sf)
-    this.vy += g - lift * 0.16 + this.windY * 0.015
+  this.vx += (this.windX + slip) * 0.09 * (0.9 + 0.1 * sf)
+  this.vy += g - lift * 0.16 + this.windY * 0.015
 
-    this.vx *= this.drag
-    this.vy *= this.drag
+  this.vx *= this.drag
+  this.vy *= this.drag
 
-    if (this.vy > this.termVy * sf) this.vy = lerp(this.vy, this.termVy * sf, 0.1)
+  if (this.vy > this.termVy * sf) this.vy = lerp(this.vy, this.termVy * sf, 0.1)
 
-    if (!this.caught) {
-      this.x += (this.vx + this.windX * 0.24 + sin(this.t * 1.1 + this.p2) * 0.16) * (0.9 + 0.1 * sf)
-      this.y += (this.vy + lift * 0.55) * sf
+  this.x += (this.vx + this.windX * 0.24 + sin(this.t * 1.1 + this.p2) * 0.16) * (0.9 + 0.1 * sf)
+  this.y += (this.vy + lift * 0.55) * sf
+
+  const windSpin = (this.windX * 0.022 + this.vx * 0.014) * 0.85
+  const flutterSpin = sin(this.flutter + this.p1) * 0.026
+  this.angle += (this.spin * 0.55 + windSpin + flutterSpin) * (0.85 + 0.25 * map(this.depth, 0.3, 1.0, 0.0, 1.0))
+
+  if (!this.splitDone) {
+    let hit = null
+
+    if (ribbonPolys) {
+      hit = ribbonHitInfo(this.x, this.y, ribbonPolys, 26)
+      if (hit) {
+        const nn = hitNormalFromSeg(hit)
+        this.splitIntoJamo({ nx: nn.nx, ny: nn.ny })
+        return
+      }
     }
 
-    const windSpin = (this.windX * 0.022 + this.vx * 0.014) * 0.85
-    const flutterSpin = sin(this.flutter + this.p1) * 0.026
-    this.angle += (this.spin * 0.55 + windSpin + flutterSpin) * (0.85 + 0.25 * map(this.depth, 0.3, 1.0, 0.0, 1.0))
-
-    if (!this.splitDone) {
-  let hit = null
-
-  if (ribbonPolys) {
-    hit = ribbonHitInfo(this.x, this.y, ribbonPolys, 26)
-    if (hit) {
-      const n = hitNormalFromSeg(hit)
-      this.splitIntoJamo({ nx: n.nx, ny: n.ny })
-    }
-  }
-
- if (!this.splitDone && hands && hands.length > 0) {
-  for (let h of hands) {
-    const d = dist(this.x, this.y, h.x, h.y)
-    if (d < 58) {
-      const nx = (this.x - h.x) / max(1, d)
-      const ny = (this.y - h.y) / max(1, d)
-      this.splitIntoJamo({ nx, ny })
-      return
+    if (hands && hands.length > 0) {
+      for (let h of hands) {
+        const d = dist(this.x, this.y, h.x, h.y)
+        if (d < 58) {
+          const nx = (this.x - h.x) / max(1, d)
+          const ny = (this.y - h.y) / max(1, d)
+          this.splitIntoJamo({ nx, ny })
+          return
+        }
       }
     }
   }
+
+  if (this.y > height + 60 || this.x < -80 || this.x > width + 80) this.alpha -= 18
+  if (this.y > height + 140 || this.x < -140 || this.x > width + 140) this.alpha -= 28
+
+  if (particles.length > MAX_PARTICLES) particles.splice(0, particles.length - MAX_PARTICLES)
 }
 
-
-    this.caught = false
-
-    if (this.caught) {
-      this.vx *= 0.78
-      this.vy *= 0.78
-      this.alpha -= 3
-      this.angle *= 0.96
-      this.flutter += this.flutterSpd * 0.9
-    }
-
-    if (this.y > height + 60 || this.x < -80 || this.x > width + 80) this.alpha -= 18
-    if (this.y > height + 140 || this.x < -140 || this.x > width + 140) this.alpha -= 28
-
-    if (particles.length > MAX_PARTICLES) particles.splice(0, particles.length - MAX_PARTICLES)
-  }
 
   isDead() {
     return this.alpha <= 0
@@ -1381,11 +1367,7 @@ function drawTextWithSoftReflection(str, x, y, sizePx, leadPx, colMain, colRefle
 
   reflectionLayer.pop()
 
-  push()
-  blendMode(SCREEN)
-  image(reflectionLayer, 0, 0, width, height)
-  blendMode(BLEND)
-  pop()
+
 }
 
 function drawIntroOverlay() {
@@ -1653,7 +1635,8 @@ function drawLineOverlay() {
 
   const w = min(width * 0.5, 560)
   const x = UI_MARGIN
-  const y = UI_MARGIN
+  const y = UI_MARGIN + SAFE_TOP
+
 
   push()
   textAlign(LEFT, TOP)
@@ -1679,7 +1662,8 @@ function drawSeasonLabel() {
     season === "winter"
       ? "winter · snow melts on hands · hold hands together to switch"
       : "spring · blossoms split into jamo · raise both hands to switch"
-  text(txt, width / 2, height - 20)
+text(txt, width / 2, height - 20 - SAFE_BOT)
+
   pop()
 }
 
@@ -2124,31 +2108,7 @@ window.onStartMain = () => {
     bgmWinter.setVolume(0.6)
   }
 }
-function drawGrainOverlay() {
-  if (!grainG) return
 
-  const amt = season === "winter" ? 0.32 : 0.22
-const step = season === "winter" ? 1 : 2
-
-
-  grainG.clear()
-  grainG.noStroke()
-
-  for (let y = 0; y < grainG.height; y += step) {
-    for (let x = 0; x < grainG.width; x += step) {
-      const n = random()
-      const a = 255 * amt * (0.35 + 0.65 * n)
-      grainG.fill(255, a)
-      grainG.rect(x, y, step, step)
-    }
-  }
-
-  push()
-  blendMode(OVERLAY)
-  image(grainG, 0, 0)
-  blendMode(BLEND)
-  pop()
-}
 
 
 
