@@ -35,6 +35,11 @@ const FONT_TITLE = "Noto Serif KR"
 
 const UI_MARGIN = 20
 const SNOW_MELT_MS = 5000
+const AUTO_SWITCH_REMOVE_COUNT = 120
+const AUTO_SWITCH_COOLDOWN_MS = 1200
+let removedTextCount = 0
+let lastAutoSwitchMs = 0
+
 
 const SENTENCE_MIN_DURATION = 5000
 const CHAR_SPAWN_INTERVAL_BASE = 16
@@ -457,12 +462,35 @@ pop()
   }
 
   for (let i = particles.length - 1; i >= 0; i--) {
-    if (particles[i].isDead()) particles.splice(i, 1)
+  const p = particles[i]
+  if (p && typeof p.isDead === "function" && p.isDead()) {
+    if (p instanceof TextParticle) removedTextCount++
+    particles.splice(i, 1)
   }
+}
+
 
   drawLineOverlay()
   drawSeasonLabel()
+  autoSwitchSeasonIfNeeded()
+
 }
+function autoSwitchSeasonIfNeeded() {
+  const now = millis()
+  if (now - lastAutoSwitchMs < AUTO_SWITCH_COOLDOWN_MS) return
+  if (removedTextCount < AUTO_SWITCH_REMOVE_COUNT) return
+
+  removedTextCount = 0
+  lastAutoSwitchMs = now
+
+  season = (season === "winter") ? "spring" : "winter"
+
+  lastSentenceChangeTime = 0
+  currentSentence = ""
+  currentSpawnSentence = ""
+  currentCharIndex = 0
+}
+
 
 
 
@@ -1653,26 +1681,8 @@ function drawLineOverlay() {
 }
 
 
-function drawSeasonLabel() {
-  push()
-  const winterCol = color(180, 210, 255, 200)
-  const springCol = color(255, 170, 210, 200)
-  const lr = lerp(red(winterCol), red(springCol), seasonMix)
-  const lg = lerp(green(winterCol), green(springCol), seasonMix)
-  const lb = lerp(blue(winterCol), blue(springCol), seasonMix)
-  fill(lr, lg, lb, 190)
-  textFont(FONT_BODY)
-  textSize(12)
-  textLeading(14)
-  textStyle(NORMAL)
-  const txt =
-    season === "winter"
-      ? "winter · snow melts on hands · hold hands together to switch"
-      : "spring · blossoms split into jamo · raise both hands to switch"
-text(txt, width / 2, height - 20 - SAFE_BOT)
+function drawSeasonLabel() { return }
 
-  pop()
-}
 
 function drawDeckLineWrapped(str, x, y, maxW, lead, trackPx) {
   push()
