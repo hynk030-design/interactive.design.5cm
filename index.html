@@ -59,7 +59,9 @@
       display: flex;
       gap: 0;
       background: transparent;
+      scrollbar-width: none;
     }
+    .carousel::-webkit-scrollbar { display: none; }
 
     .slide {
       scroll-snap-align: start;
@@ -67,10 +69,10 @@
       width: 100%;
       height: calc(var(--vh) * 100);
       box-sizing: border-box;
-      padding: 22px 18px 18px 18px;
+      padding: 18px 16px 18px 16px;
       color: rgba(242, 246, 255, 0.92);
       font-family: "Noto Serif KR", serif;
-      line-height: 1.65;
+      line-height: 1.48;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -79,20 +81,20 @@
     .topHint {
       font-family: "Noto Sans KR", sans-serif;
       font-size: 12px;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       color: rgba(230, 235, 255, 0.55);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .title {
-      font-size: 34px;
+      font-size: 28px;
       letter-spacing: 0.02em;
-      margin: 6px 0 14px 0;
+      margin: 6px 0 12px 0;
       color: rgba(250, 252, 255, 0.96);
     }
 
     .block {
-      font-size: 15px;
+      font-size: 14px;
       color: rgba(240, 245, 255, 0.88);
       max-width: 44rem;
     }
@@ -100,43 +102,23 @@
     .subTitle {
       font-family: "Noto Sans KR", sans-serif;
       font-weight: 500;
-      letter-spacing: 0.06em;
-      font-size: 14px;
+      letter-spacing: 0.05em;
+      font-size: 13px;
       color: rgba(230, 236, 255, 0.72);
-      margin: 6px 0 14px 0;
+      margin: 6px 0 12px 0;
     }
 
     .divider {
       height: 1px;
       width: 100%;
       background: rgba(255, 255, 255, 0.12);
-      margin: 14px 0 14px 0;
+      margin: 12px 0 12px 0;
     }
 
     .twoCols {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-    }
-
-    .pillRow {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      font-family: "Noto Sans KR", sans-serif;
-      font-size: 12px;
-      letter-spacing: 0.08em;
-      color: rgba(230, 236, 255, 0.55);
-      margin-top: 10px;
-    }
-
-    .pill {
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      gap: 12px;
     }
 
     .startWrap {
@@ -181,10 +163,6 @@
           <div class="block">
             〈초속 5센티미터〉의 계절감에서 출발해, 가까워지고 싶지만 끝내 남는 ‘미세한 간격’을 손의 움직임과 타이포그래피의 속도로 번역합니다.<br>
             눈은 말해지지 못한 문장을, 벚꽃은 어긋난 타이밍을 닮아 화면 위에 머물다 흩어집니다.
-          </div>
-          <div class="pillRow">
-            <span class="pill">winter · snow</span>
-            <span class="pill">spring · blossom</span>
           </div>
         </div>
         <div></div>
