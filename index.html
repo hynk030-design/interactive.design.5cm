@@ -20,6 +20,7 @@
       overflow: hidden;
       background: #000;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #vanta-bg {
@@ -36,135 +37,237 @@
       z-index: 1;
     }
 
-    /* =========================
-       모바일 가로 스크롤 인트로
-    ========================= */
-    #intro {
+    #mobileIntro {
       display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 3;
+      pointer-events: auto;
     }
 
     @media (max-width: 768px) {
-      html, body {
-        overflow: hidden;
-      }
+      #mobileIntro { display: block; }
+    }
 
-      canvas {
-        position: relative;
-        height: 70vh;
-      }
+    .carousel {
+      width: 100%;
+      height: calc(var(--vh) * 100);
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      gap: 0;
+      background: transparent;
+    }
 
-      #intro {
-        display: block;
-        position: fixed;
-        inset: 0;
-        z-index: 5;
-        background: rgba(0,0,0,0.85);
-        backdrop-filter: blur(2px);
-      }
+    .slide {
+      scroll-snap-align: start;
+      flex: 0 0 100%;
+      width: 100%;
+      height: calc(var(--vh) * 100);
+      box-sizing: border-box;
+      padding: 22px 18px 18px 18px;
+      color: rgba(242, 246, 255, 0.92);
+      font-family: "Noto Serif KR", serif;
+      line-height: 1.65;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
 
-      #intro .rail {
-        height: 100%;
-        display: flex;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-      }
+    .topHint {
+      font-family: "Noto Sans KR", sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: rgba(230, 235, 255, 0.55);
+      margin-bottom: 10px;
+    }
 
-      #intro .panel {
-        flex: 0 0 100%;
-        scroll-snap-align: start;
-        padding: 28px 22px;
-        box-sizing: border-box;
-        color: #eee;
-        font-family: 'Noto Serif KR', serif;
-        line-height: 1.7;
-      }
+    .title {
+      font-size: 34px;
+      letter-spacing: 0.02em;
+      margin: 6px 0 14px 0;
+      color: rgba(250, 252, 255, 0.96);
+    }
 
-      #intro h2 {
-        font-size: 22px;
-        margin-bottom: 14px;
-      }
+    .block {
+      font-size: 15px;
+      color: rgba(240, 245, 255, 0.88);
+      max-width: 44rem;
+    }
 
-      #intro p {
-        opacity: 0.9;
-        margin-bottom: 14px;
-      }
+    .subTitle {
+      font-family: "Noto Sans KR", sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      font-size: 14px;
+      color: rgba(230, 236, 255, 0.72);
+      margin: 6px 0 14px 0;
+    }
 
-      #intro .hint {
-        font-size: 12px;
-        opacity: 0.6;
-        margin-top: 20px;
-        font-family: 'Noto Sans KR', sans-serif;
-      }
+    .divider {
+      height: 1px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 14px 0 14px 0;
+    }
 
-      #startBtn {
-        margin-top: 24px;
-        padding: 14px 16px;
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.35);
-        background: rgba(0,0,0,0.4);
-        color: #fff;
-        font-size: 14px;
-        font-family: 'Noto Sans KR', sans-serif;
-      }
+    .twoCols {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .pillRow {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-family: "Noto Sans KR", sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: rgba(230, 236, 255, 0.55);
+      margin-top: 10px;
+    }
+
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .startWrap {
+      display: flex;
+      justify-content: center;
+      padding-bottom: 10px;
+    }
+
+    #startBtn {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(255, 255, 255, 0.10);
+      color: rgba(255, 255, 255, 0.92);
+      font-family: "Noto Sans KR", sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      font-size: 14px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      min-width: 220px;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.35);
+    }
+
+    #startBtn:active {
+      transform: translateY(1px);
     }
   </style>
 </head>
 
 <body>
-
   <div id="vanta-bg"></div>
 
-  <!-- 모바일 가로 스크롤 인트로 -->
-  <div id="intro">
-    <div class="rail">
-      <section class="panel">
-        <h2>초속 5cm</h2>
-        <p>
-          손의 움직임과 텍스트의 낙하 속도를 통해<br>
-          사람 사이에 남는 미세한 간격을 표현한 인터랙티브 작업입니다.
-        </p>
-        <div class="hint">→ 옆으로 넘겨보세요</div>
+  <div id="mobileIntro">
+    <div class="carousel" id="carousel">
+      <section class="slide">
+        <div>
+          <div class="topHint">좌우로 넘겨 읽기</div>
+          <div class="title">초속 5cm</div>
+          <div class="block">
+            〈초속 5센티미터〉의 계절감에서 출발해, 가까워지고 싶지만 끝내 남는 ‘미세한 간격’을 손의 움직임과 타이포그래피의 속도로 번역합니다.<br>
+            눈은 말해지지 못한 문장을, 벚꽃은 어긋난 타이밍을 닮아 화면 위에 머물다 흩어집니다.
+          </div>
+          <div class="pillRow">
+            <span class="pill">winter · snow</span>
+            <span class="pill">spring · blossom</span>
+          </div>
+        </div>
+        <div></div>
       </section>
 
-      <section class="panel">
-        <p>
-          겨울에는 텍스트가 눈처럼 천천히 녹아 사라지고,<br>
-          봄에는 자모로 분해되어 흩어집니다.
-        </p>
-        <p>
-          닿을 듯 닿지 않는 타이밍과<br>
-          멀어지는 감정의 속도를 시각화합니다.
-        </p>
+      <section class="slide">
+        <div>
+          <div class="topHint">좌우로 넘겨 읽기</div>
+          <div class="subTitle">손과 텍스트의 거리</div>
+          <div class="block">
+            이 작업에서 ‘거리’는 물리적인 간격이라기보다,<br>
+            가까워지고 싶은 마음과 끝내 남는 여백 사이의 리듬입니다.<br><br>
+
+            〈초속 5센티미터〉에서 계절은 ‘감정의 속도’를 결정합니다.<br>
+            겨울은 말이 늦어지고, 마음이 제자리에서 얼어붙는 시간입니다.<br>
+            보내지 못한 메시지와 미뤄진 약속은 눈처럼 쌓여 시야를 흐리고,<br>
+            닿기 전에 이미 늦어버린 문장들이 손끝에서 번졌다가 사라집니다.<br><br>
+
+            반대로 봄은 마음이 다시 움직이려는 순간의 불안정함입니다.<br>
+            손을 뻗을수록 타이밍은 비껴가고,<br>
+            스쳐 지나간 찰나가 오히려 가장 선명한 기억으로 남습니다.<br><br>
+
+            이 화면에서 텍스트는 ‘관계의 속도’로 떨어집니다.<br>
+            가까워지려는 손의 움직임과 멀어지는 문장의 움직임이 겹치며,<br>
+            끝내 남는 미세한 간격을 눈과 벚꽃의 리듬으로 드러냅니다.
+          </div>
+        </div>
+        <div></div>
       </section>
 
-      <section class="panel">
-        <p>
-          화면 앞에 서서 손을 움직여 보세요.<br>
-          계절과 텍스트의 반응이 달라집니다.
-        </p>
-        <button id="startBtn">작품 감상 시작</button>
+      <section class="slide">
+        <div>
+          <div class="topHint">좌우로 넘겨 읽기</div>
+          <div class="subTitle">계절 모드</div>
+          <div class="divider"></div>
+
+          <div class="twoCols">
+            <div class="block">
+              <b style="font-family:'Noto Sans KR',sans-serif; letter-spacing:0.06em;">겨울</b><br>
+              겨울 모드에서는 텍스트가 눈송이처럼 천천히 떨어집니다.<br>
+              손에 닿는 순간 잠시 번져 오르듯 커졌다가<br>
+              부서지며 녹아 사라집니다.<br>
+              멀어지는 마음과 쌓이는 거리감이<br>
+              조용한 낙하와 소멸의 리듬으로 표현됩니다.
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="block">
+              <b style="font-family:'Noto Sans KR',sans-serif; letter-spacing:0.06em;">봄</b><br>
+              봄 모드에서는 텍스트가 벚꽃잎처럼 가볍게 흔들리며 떨어집니다.<br>
+              손끝을 스치면 자모로 분해되어 흩어지고,<br>
+              두 사람이 있을 때는 손과 손 사이에 잠시 머뭅니다.<br>
+              닿지 못한 채 스쳐 지나가는 순간들과<br>
+              잠깐의 만남이 한 화면 안에 공존합니다.
+            </div>
+          </div>
+        </div>
+
+        <div class="startWrap">
+          <button id="startBtn" type="button">작품 감상</button>
+        </div>
       </section>
     </div>
   </div>
 
-  <!-- three / vanta -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
 
-  <!-- MediaPipe Pose -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
 
-  <!-- p5 -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/p5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5@1.9.3/lib/addons/p5.sound.min.js"></script>
 
-  <!-- sketch -->
   <script src="sketch.js"></script>
 
   <script>
     let vantaEffect = null
     window.started = false
+
+    function setVH() {
+      document.documentElement.style.setProperty("--vh", (window.innerHeight * 0.01) + "px")
+    }
 
     function initVanta() {
       vantaEffect = VANTA.NET({
@@ -172,57 +275,59 @@
         mouseControls: true,
         touchControls: true,
         gyroControls: false,
-        points: 12,
-        maxDistance: 11,
-        spacing: 26,
+        points: 12.0,
+        maxDistance: 11.0,
+        spacing: 26.0,
         showDots: true,
         color: 0xffffff,
         backgroundColor: 0x000000,
         backgroundAlpha: 0.08
       })
+
+      const el = document.getElementById("vanta-bg")
+      if (el) el.style.pointerEvents = "auto"
     }
 
     function startMain() {
       if (window.started) return
       window.started = true
 
+      const mobileIntro = document.getElementById("mobileIntro")
+      if (mobileIntro) mobileIntro.style.display = "none"
+
+      if (typeof window.showIntro !== "undefined") window.showIntro = false
+      if (typeof window.introRipples !== "undefined") window.introRipples = []
+
       const bg = document.getElementById("vanta-bg")
+      bg.style.transition = "opacity 0.9s ease"
       bg.style.opacity = "0"
 
-      if (typeof window.onStartMain === "function") {
-        window.onStartMain()
-      }
+      if (typeof window.onStartMain === "function") window.onStartMain()
 
       setTimeout(() => {
-        if (vantaEffect) vantaEffect.destroy()
+        if (vantaEffect) {
+          vantaEffect.destroy()
+          vantaEffect = null
+        }
         bg.style.display = "none"
       }, 900)
     }
 
-    function setVH() {
-      document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`)
-    }
+    window.addEventListener("resize", setVH)
+    window.addEventListener("orientationchange", setVH)
 
     window.addEventListener("DOMContentLoaded", () => {
       setVH()
       initVanta()
 
       const isMobile = matchMedia("(max-width: 768px)").matches
-
       if (isMobile) {
         const btn = document.getElementById("startBtn")
-        btn.addEventListener("click", () => {
-          document.getElementById("intro").style.display = "none"
-          startMain()
-        }, { once: true })
+        if (btn) btn.addEventListener("click", startMain, { once: true })
       } else {
         document.addEventListener("pointerdown", startMain, { once: true })
       }
     })
-
-    window.addEventListener("resize", setVH)
-    window.addEventListener("orientationchange", setVH)
   </script>
-
 </body>
 </html>
